@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macos-uninstall-inspector"
+version = "0.1.0"
+description = "Design-first, provenance-aware macOS uninstall inspection framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "2001Y"}]
+dependencies = [
+  "jsonschema>=4.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

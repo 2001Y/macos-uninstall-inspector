@@ -1,0 +1,17 @@
+{
+  "app": {
+    "path": "/Applications/Foo.app",
+    "display_name": "Foo",
+    "bundle_id": "com.example.foo"
+  },
+  "distribution": {
+    "resolver_priority": ["heuristic_fallback"],
+    "manager_hint": null
+  },
+  "mode_thresholds": {
+    "safe": 80,
+    "balanced": 60,
+    "aggressive": 35
+  },
+  "candidates": []
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/2001Y/macos-uninstall-inspector/blob/main/schemas/finding.schema.json",
+  "title": "macOS Uninstall Inspection Report",
+  "type": "object",
+  "required": ["app", "distribution", "mode_thresholds", "candidates"],
+  "properties": {
+    "app": {
+      "type": "object",
+      "required": ["path", "display_name", "bundle_id"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "display_name": {"type": "string", "minLength": 1},
+        "bundle_id": {"type": "string", "minLength": 1},
+        "team_id": {"type": ["string", "null"]},
+        "vendor": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "distribution": {
+      "type": "object",
+      "required": ["kind", "resolver_priority"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["plain_app", "mas", "homebrew_cask", "pkg", "setapp", "vendor_suite"]
+        },
+        "resolver_priority": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1
+        },
+        "manager_hint": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "mode_thresholds": {
+      "type": "object",
+      "required": ["safe", "balanced", "aggressive"],
+      "properties": {
+        "safe": {"type": "integer", "minimum": 0, "maximum": 100},
+        "balanced": {"type": "integer", "minimum": 0, "maximum": 100},
+        "aggressive": {"type": "integer", "minimum": 0, "maximum": 100}
+      },
+      "additionalProperties": false
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "ownership", "score", "evidence", "modes"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "ownership": {
+            "type": "string",
+            "enum": ["app_owned", "system_integrated", "vendor_shared", "heuristic_only"]
+          },
+          "score": {"type": "integer", "minimum": 0, "maximum": 100},
+          "evidence": {
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          "warnings": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "modes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["safe", "balanced", "aggressive"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

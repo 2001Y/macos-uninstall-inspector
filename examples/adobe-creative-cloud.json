@@ -1,0 +1,37 @@
+{
+  "app": {
+    "path": "/Applications/Adobe Creative Cloud/ACC/Creative Cloud.app",
+    "display_name": "Creative Cloud",
+    "bundle_id": "com.adobe.accmac",
+    "team_id": "JQ525L2MZD",
+    "vendor": "Adobe"
+  },
+  "distribution": {
+    "kind": "vendor_suite",
+    "resolver_priority": ["vendor_adapter", "pkg", "bundle_embedded", "system_integration", "user_state", "heuristic_fallback"],
+    "manager_hint": "Use Adobe Creative Cloud app uninstall flow or Cleaner Tool before generic deletion"
+  },
+  "mode_thresholds": {
+    "safe": 80,
+    "balanced": 60,
+    "aggressive": 35
+  },
+  "candidates": [
+    {
+      "path": "/Applications/Adobe Creative Cloud/ACC/Creative Cloud.app",
+      "ownership": "app_owned",
+      "score": 97,
+      "evidence": ["vendor_adapter_exact", "bundle_path_exact"],
+      "warnings": [],
+      "modes": ["safe", "balanced", "aggressive"]
+    },
+    {
+      "path": "/Library/Application Support/Adobe",
+      "ownership": "vendor_shared",
+      "score": 52,
+      "evidence": ["vendor_suite_path", "shared_support_directory"],
+      "warnings": ["likely_shared_across_suite"],
+      "modes": ["aggressive"]
+    }
+  ]
+}

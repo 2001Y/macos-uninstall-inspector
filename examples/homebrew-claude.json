@@ -1,0 +1,45 @@
+{
+  "app": {
+    "path": "/Applications/Claude.app",
+    "display_name": "Claude",
+    "bundle_id": "com.anthropic.claudefordesktop",
+    "team_id": "Q6L2SF6YDW",
+    "vendor": "Anthropic"
+  },
+  "distribution": {
+    "kind": "homebrew_cask",
+    "resolver_priority": ["homebrew", "bundle_embedded", "containers", "user_state", "heuristic_fallback"],
+    "manager_hint": "brew uninstall --cask claude"
+  },
+  "mode_thresholds": {
+    "safe": 80,
+    "balanced": 60,
+    "aggressive": 35
+  },
+  "candidates": [
+    {
+      "path": "/Applications/Claude.app",
+      "ownership": "app_owned",
+      "score": 98,
+      "evidence": ["homebrew_cask_artifact", "bundle_path_exact"],
+      "warnings": [],
+      "modes": ["safe", "balanced", "aggressive"]
+    },
+    {
+      "path": "/Users/example/Library/Preferences/com.anthropic.claudefordesktop.plist",
+      "ownership": "app_owned",
+      "score": 84,
+      "evidence": ["bundle_id_exact", "preferences_conventional_path"],
+      "warnings": [],
+      "modes": ["safe", "balanced", "aggressive"]
+    },
+    {
+      "path": "/Users/example/Library/Logs/Claude",
+      "ownership": "app_owned",
+      "score": 68,
+      "evidence": ["app_name_exact", "logs_conventional_path"],
+      "warnings": [],
+      "modes": ["balanced", "aggressive"]
+    }
+  ]
+}
