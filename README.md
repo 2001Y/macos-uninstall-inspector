@@ -1,5 +1,7 @@
 # macos-uninstall-inspector
 
+- 日本語: [README.ja.md](README.ja.md)
+
 **Know what an app owns before you delete it.**
 
 A provenance-aware macOS uninstall inspector that explains **what should be removed**, **why it was matched**, and **how confident it is** — before anything destructive happens.
@@ -33,12 +35,13 @@ Implemented now:
 - distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - conventional scanning for embedded helpers and common Library state
 - generic scanning for LaunchAgents / LaunchDaemons / PrivilegedHelperTools
+- stronger launchd correlation via bundle id / app name / executable path matching
 - evidence scoring and ownership classification
 - mode filtering: `safe`, `balanced`, `aggressive`
 - JSON output validated against `schemas/finding.schema.json`
 
 Still future work:
-- deeper system integration scanning (LaunchAgents/Daemons, PrivilegedHelperTools, audio plugins)
+- deeper system integration scanning (audio plugins, QuickLook, PreferencePanes, widgets)
 - full entitlements/container metadata correlation
 - richer vendor adapters beyond Adobe
 - reviewed deletion engine

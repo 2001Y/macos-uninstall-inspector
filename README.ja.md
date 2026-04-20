@@ -1,5 +1,7 @@
 # macos-uninstall-inspector
 
+- English: [README.md](README.md)
+
 **削除する前に、そのアプリが本当に何を持っているかを知る。**
 
 `macos-uninstall-inspector` は、macOS アプリのアンインストール候補を **削除前に** 調べ、
@@ -43,12 +45,13 @@
   - plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - embedded helper と一般的な `~/Library` 領域の scan
 - `LaunchAgents` / `LaunchDaemons` / `PrivilegedHelperTools` の generic scan
+- bundle id / app名 / executable path を使った launchd 相関強化
 - evidence score / ownership class の算出
 - `safe` / `balanced` / `aggressive` mode filter
 - `schemas/finding.schema.json` に対する JSON validation
 
 未実装 / 今後:
-- `LaunchAgents` / `LaunchDaemons` / `PrivilegedHelperTools` の深掘り
+- audio plug-ins / QuickLook / PreferencePanes / widgets などの system integration 拡張
 - entitlements / group containers / UUID container metadata の相関
 - Adobe 以外の vendor adapter 拡張
 - review 前提の delete engine

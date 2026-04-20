@@ -2,9 +2,13 @@
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
 from macos_uninstall_inspector.schema_tools import load_json, load_packaged_schema, validate_document
 
-ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES_DIR = ROOT / "examples"
 
 

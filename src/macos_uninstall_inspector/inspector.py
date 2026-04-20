@@ -19,7 +19,10 @@ EVIDENCE_WEIGHTS = {
     "shared_support_directory": -25,
     "vendor_token_match": -15,
     "launchd_exact": 25,
+    "launchd_app_name_match": 18,
+    "launchd_program_match": 22,
     "privileged_helper_exact": 28,
+    "embedded_helper_id_exact": 28,
 }
 
 MODE_THRESHOLDS = {"safe": 80, "balanced": 60, "aggressive": 35}
@@ -135,6 +138,16 @@ class Inspector:
             return "vendor_shared"
         if any(ev in evidence for ev in ["homebrew_cask_artifact", "bundle_path_exact", "bundle_id_exact"]):
             return "app_owned"
-        if any(ev in evidence for ev in ["launchd_exact", "privileged_helper_exact", "system_extension_embedded"]):
+        if any(
+            ev in evidence
+            for ev in [
+                "launchd_exact",
+                "launchd_app_name_match",
+                "launchd_program_match",
+                "privileged_helper_exact",
+                "embedded_helper_id_exact",
+                "system_extension_embedded",
+            ]
+        ):
             return "system_integrated"
         return "heuristic_only"
