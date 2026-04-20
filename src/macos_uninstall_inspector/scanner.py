@@ -36,21 +36,42 @@ class ConventionalScanner:
 
     def _scan_embedded(self, identity: AppIdentity) -> list[dict]:
         results = []
-        for relative in [
-            Path("Contents/Library/LoginItems"),
-            Path("Contents/Library/SystemExtensions"),
-            Path("Contents/Library/Helpers"),
-            Path("Contents/Helpers"),
-            Path("Contents/XPCServices"),
-            Path("Contents/PlugIns"),
-        ]:
+        embedded_locations = {
+            Path("Contents/Library/LoginItems"): {
+                "evidence": ["login_item_embedded"],
+                "accept": lambda child: child.is_dir() and child.suffix == ".app",
+            },
+            Path("Contents/Library/SystemExtensions"): {
+                "evidence": ["system_extension_embedded"],
+                "accept": lambda child: child.is_dir() and child.suffix == ".systemextension",
+            },
+            Path("Contents/Library/Helpers"): {
+                "evidence": ["bundle_path_exact", "embedded_helper_path"],
+                "accept": lambda child: True,
+            },
+            Path("Contents/Helpers"): {
+                "evidence": ["bundle_path_exact", "embedded_helper_path"],
+                "accept": lambda child: True,
+            },
+            Path("Contents/XPCServices"): {
+                "evidence": ["bundle_path_exact", "embedded_helper_path"],
+                "accept": lambda child: True,
+            },
+            Path("Contents/PlugIns"): {
+                "evidence": ["bundle_path_exact", "embedded_helper_path"],
+                "accept": lambda child: True,
+            },
+        }
+        for relative, config in embedded_locations.items():
             base = identity.path / relative
             if base.exists():
                 for child in sorted(base.iterdir()):
+                    if not config["accept"](child):
+                        continue
                     results.append(
                         {
                             "path": str(child),
-                            "evidence": ["bundle_path_exact", "embedded_helper_path"],
+                            "evidence": config["evidence"],
                         }
                     )
         return results

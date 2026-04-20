@@ -359,3 +359,80 @@ def test_scanner_ignores_hyphenated_executable_false_positives_in_launchd(tmp_pa
     by_path = {item["path"]: item for item in findings}
 
     assert str(unrelated) not in by_path
+
+
+def test_scanner_marks_embedded_login_items_as_system_integrated(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    login_item = app / "Contents" / "Library" / "LoginItems" / "SampleLauncher.app"
+    login_item.mkdir(parents=True)
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(login_item) in by_path
+    assert "login_item_embedded" in by_path[str(login_item)]["evidence"]
+
+
+def test_scanner_ignores_non_bundle_login_items(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    stray_file = app / "Contents" / "Library" / "LoginItems" / "README.txt"
+    stray_file.parent.mkdir(parents=True)
+    stray_file.write_text("not a login item bundle")
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(stray_file) not in by_path
+
+
+def test_scanner_ignores_login_item_named_app_that_is_not_directory(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    fake_bundle = app / "Contents" / "Library" / "LoginItems" / "Fake.app"
+    fake_bundle.parent.mkdir(parents=True)
+    fake_bundle.write_text("not actually an app bundle")
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(fake_bundle) not in by_path
+
+
+def test_scanner_marks_embedded_system_extensions_as_system_integrated(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    system_extension = app / "Contents" / "Library" / "SystemExtensions" / "com.example.sample.network-extension.systemextension"
+    system_extension.mkdir(parents=True)
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(system_extension) in by_path
+    assert "system_extension_embedded" in by_path[str(system_extension)]["evidence"]
+
+
+def test_scanner_ignores_non_bundle_system_extensions(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    stray_dir = app / "Contents" / "Library" / "SystemExtensions" / "tmp"
+    stray_dir.mkdir(parents=True)
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(stray_dir) not in by_path
+
+
+def test_scanner_ignores_system_extension_named_bundle_that_is_not_directory(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    fake_bundle = app / "Contents" / "Library" / "SystemExtensions" / "Fake.systemextension"
+    fake_bundle.parent.mkdir(parents=True)
+    fake_bundle.write_text("not actually a system extension bundle")
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=tmp_path / "home", system_root=tmp_path / "Library").scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(fake_bundle) not in by_path

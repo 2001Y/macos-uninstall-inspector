@@ -35,6 +35,7 @@ Implemented now:
 - distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - conventional scanning for embedded helpers and common Library state
 - generic scanning for LaunchAgents / LaunchDaemons / PrivilegedHelperTools
+- embedded LoginItems / SystemExtensions classified as system-integrated candidates
 - stronger launchd correlation via bundle id / app name / executable path matching
 - evidence scoring and ownership classification
 - mode filtering: `safe`, `balanced`, `aggressive`

@@ -23,6 +23,8 @@ EVIDENCE_WEIGHTS = {
     "launchd_program_match": 22,
     "privileged_helper_exact": 28,
     "embedded_helper_id_exact": 28,
+    "login_item_embedded": 24,
+    "system_extension_embedded": 26,
 }
 
 MODE_THRESHOLDS = {"safe": 80, "balanced": 60, "aggressive": 35}
@@ -146,6 +148,7 @@ class Inspector:
                 "launchd_program_match",
                 "privileged_helper_exact",
                 "embedded_helper_id_exact",
+                "login_item_embedded",
                 "system_extension_embedded",
             ]
         ):

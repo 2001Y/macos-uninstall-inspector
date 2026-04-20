@@ -45,6 +45,7 @@
   - plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - embedded helper と一般的な `~/Library` 領域の scan
 - `LaunchAgents` / `LaunchDaemons` / `PrivilegedHelperTools` の generic scan
+- embedded `LoginItems` / `SystemExtensions` を system-integrated candidate として分類
 - bundle id / app名 / executable path を使った launchd 相関強化
 - evidence score / ownership class の算出
 - `safe` / `balanced` / `aggressive` mode filter

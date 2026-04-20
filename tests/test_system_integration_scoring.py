@@ -33,10 +33,25 @@ def test_system_integrations_are_classified_separately(tmp_path: Path):
                     "path": "/Library/PrivilegedHelperTools/com.example.sample.helper",
                     "evidence": ["privileged_helper_exact"],
                 },
+                {
+                    "path": "/Applications/Sample.app/Contents/Library/LoginItems/SampleLauncher.app",
+                    "evidence": ["login_item_embedded"],
+                },
+                {
+                    "path": "/Applications/Sample.app/Contents/Library/SystemExtensions/com.example.sample.network-extension.systemextension",
+                    "evidence": ["system_extension_embedded"],
+                },
             ]
         },
     )
     by_path = {c.path: c for c in report.candidates}
     assert by_path["/Library/LaunchDaemons/com.example.sample.daemon.plist"].ownership == "system_integrated"
     assert by_path["/Library/PrivilegedHelperTools/com.example.sample.helper"].ownership == "system_integrated"
+    assert by_path["/Applications/Sample.app/Contents/Library/LoginItems/SampleLauncher.app"].ownership == "system_integrated"
+    assert by_path["/Applications/Sample.app/Contents/Library/SystemExtensions/com.example.sample.network-extension.systemextension"].ownership == "system_integrated"
     assert by_path["/Library/LaunchDaemons/com.example.sample.daemon.plist"].score >= 70
+    assert by_path["/Applications/Sample.app/Contents/Library/LoginItems/SampleLauncher.app"].score >= 70
+    assert "balanced" in by_path["/Applications/Sample.app/Contents/Library/LoginItems/SampleLauncher.app"].modes
+    assert "safe" not in by_path["/Applications/Sample.app/Contents/Library/LoginItems/SampleLauncher.app"].modes
+    assert "balanced" in by_path["/Applications/Sample.app/Contents/Library/SystemExtensions/com.example.sample.network-extension.systemextension"].modes
+    assert "safe" not in by_path["/Applications/Sample.app/Contents/Library/SystemExtensions/com.example.sample.network-extension.systemextension"].modes
