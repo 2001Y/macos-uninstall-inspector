@@ -2,7 +2,7 @@
 
 A design-first, provenance-aware framework for inspecting what should be removed when uninstalling macOS applications.
 
-This repository is intentionally **inspection-first**. It prioritizes discovering, classifying, and scoring uninstall candidates before any destructive action. The goal is to outperform AppCleaner/Pearcleaner-style heuristic-only approaches by preferring structured provenance sources such as Homebrew casks, pkg receipts/BOMs, bundle-embedded helpers, containers, app groups, launchd assets, and official vendor uninstall paths.
+This repository is intentionally **inspection-first**. It now includes a working read-only CLI that discovers, classifies, and scores uninstall candidates before any destructive action. The goal is to outperform AppCleaner/Pearcleaner-style heuristic-only approaches by preferring structured provenance sources such as Homebrew casks, pkg receipts/BOMs, bundle-embedded helpers, containers, app groups, launchd assets, and official vendor uninstall paths.
 
 ## Why this exists
 
@@ -104,7 +104,7 @@ A future implementation should:
 - allow review before deletion
 - route Adobe/Setapp/Homebrew/pkg cases through the correct manager first
 
-## Quick start for this design repo
+## Quick start
 
 ```bash
 cd macos-uninstall-inspector
@@ -113,11 +113,31 @@ source .venv/bin/activate
 pip install -e .[dev]
 pytest -q
 python scripts/validate_examples.py
+mui inspect /Applications/Claude.app
+mui inspect /Applications/Claude.app --mode safe
 ```
+
+## Current implementation status
+
+Implemented now:
+- read-only inspection CLI: `mui inspect <App.app>`
+- automatic runtime context collection for Homebrew and pkg hints
+- identity extraction from app bundles
+- distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
+- conventional scanning for embedded helpers and common Library state
+- evidence scoring and ownership classification
+- mode filtering: `safe`, `balanced`, `aggressive`
+- JSON output validated against `schemas/finding.schema.json`
+
+Still future work:
+- deeper system integration scanning (LaunchAgents/Daemons, PrivilegedHelperTools, audio plugins)
+- full entitlements/container metadata correlation
+- richer vendor adapters beyond Adobe
+- reviewed deletion engine
 
 ## Initial scope
 
-This initial public repo publishes the detailed design, schema, examples, and validation scaffolding needed to begin implementation.
+This public repo now contains both the detailed design and an implemented read-only MVP inspector.
 
 ## License
 

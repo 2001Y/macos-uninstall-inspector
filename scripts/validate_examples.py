@@ -2,15 +2,14 @@
 import sys
 from pathlib import Path
 
-from macos_uninstall_inspector.schema_tools import load_json, load_schema, validate_document
+from macos_uninstall_inspector.schema_tools import load_json, load_packaged_schema, validate_document
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA_PATH = ROOT / "schemas" / "finding.schema.json"
 EXAMPLES_DIR = ROOT / "examples"
 
 
 def main() -> int:
-    schema = load_schema(SCHEMA_PATH)
+    schema = load_packaged_schema()
     checked = 0
     for path in sorted(EXAMPLES_DIR.glob("*.json")):
         if path.name.startswith("invalid-"):
