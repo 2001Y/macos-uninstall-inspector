@@ -1,47 +1,50 @@
 # macos-uninstall-inspector
 
-A design-first, provenance-aware framework for inspecting what should be removed when uninstalling macOS applications.
+**Know what an app owns before you delete it.**
 
-This repository is intentionally **inspection-first**. It now includes a working read-only CLI that discovers, classifies, and scores uninstall candidates before any destructive action. The goal is to outperform AppCleaner/Pearcleaner-style heuristic-only approaches by preferring structured provenance sources such as Homebrew casks, pkg receipts/BOMs, bundle-embedded helpers, containers, app groups, launchd assets, and official vendor uninstall paths.
+A provenance-aware macOS uninstall inspector that explains **what should be removed**, **why it was matched**, and **how confident it is** — before anything destructive happens.
+
+Instead of acting like every Mac app is just a loose `.app` bundle, `macos-uninstall-inspector` treats uninstall inspection as a provenance problem:
+
+- Was it installed by **Homebrew**?
+- Did it come from a **pkg** with receipts/BOMs?
+- Is it a **Mac App Store** app?
+- Is it **Setapp-managed**?
+- Is it part of a **vendor-managed suite** like Adobe?
+- Is this file **app-owned**, **system-integrated**, **vendor-shared**, or just a **heuristic guess**?
 
 ## Why this exists
 
-macOS app removal is not one problem. Different distribution channels require different logic:
+Traditional Mac uninstall tools are often good at collecting *possible* leftovers, but weaker at explaining *ownership*. This project focuses on the missing layer:
 
-- Plain `.app` bundles dragged from a DMG/ZIP
-- Mac App Store apps
-- Homebrew casks
-- `pkg` installers with receipts/BOMs
-- Setapp-managed apps
-- Complex vendor-managed suites such as Adobe Creative Cloud
+- structured provenance before name matching
+- confidence scoring instead of false certainty
+- safe/balanced/aggressive review modes
+- vendor-aware handling without collapsing into vendor-specific hacks everywhere
 
 Running with `sudo` helps with **visibility and deletion permissions**, but it does **not** solve the harder problem: deciding whether a file truly belongs to a specific app versus a shared vendor asset or unrelated bystander.
 
-## Principles
+## What it does today
 
-1. **Inspect before delete**
-2. **Prefer structured evidence over name matching**
-3. **Keep provenance by distribution channel**
-4. **Treat vendor-managed suites specially**
-5. **Support safe / balanced / aggressive modes**
-6. **Score confidence per candidate instead of pretending certainty**
-7. **Never assume `sudo` fixes attribution accuracy**
+Implemented now:
+- read-only inspection CLI: `mui inspect <App.app>`
+- automatic runtime context collection for Homebrew and pkg hints
+- identity extraction from app bundles
+- distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
+- conventional scanning for embedded helpers and common Library state
+- evidence scoring and ownership classification
+- mode filtering: `safe`, `balanced`, `aggressive`
+- JSON output validated against `schemas/finding.schema.json`
 
-## Repository contents
+Still future work:
+- deeper system integration scanning (LaunchAgents/Daemons, PrivilegedHelperTools, audio plugins)
+- full entitlements/container metadata correlation
+- richer vendor adapters beyond Adobe
+- reviewed deletion engine
 
-- `docs/architecture.md` — full system architecture
-- `docs/pipeline.md` — step-by-step discovery order
-- `docs/distribution-strategies.md` — Homebrew / pkg / MAS / Setapp / Adobe handling
-- `docs/confidence-model.md` — scoring and candidate classification
-- `docs/roadmap.md` — implementation roadmap and milestones
-- `schemas/finding.schema.json` — canonical JSON shape for an inspection result
-- `examples/` — sample inspection outputs
-- `scripts/validate_examples.py` — schema validation helper
-- `tests/` — tests for schema/example validation
+## Core idea
 
-## Core design
-
-The discovery pipeline always tries **all** applicable approaches, but not all evidence is treated equally.
+The discovery pipeline always tries **all applicable approaches**, but not all evidence is treated equally.
 
 ### Ordered evidence layers
 
@@ -78,6 +81,22 @@ The discovery pipeline always tries **all** applicable approaches, but not all e
    - path/name/vendor matching
    - stripped app names
    - team identifier / vendor hints
+
+## Generic formulas matter more than vendor one-offs
+
+This project values **generic, reusable rules** over brittle per-vendor special-casing.
+
+The goal is not to hardcode every vendor forever. The goal is to identify reusable formulas such as:
+
+- official manager first, generic fallback second
+- structured provenance first, heuristic fallback last
+- separate app-owned vs vendor-shared assets
+- classify system integrations explicitly
+- keep confidence and evidence attached to every candidate
+
+Vendor adapters still matter, but they should exist mainly to express a **general policy pattern** clearly enough to reuse across many vendors.
+
+See [`docs/generic-vendor-formulas.md`](docs/generic-vendor-formulas.md) for the policy direction.
 
 ## Supported uninstall classes
 
@@ -117,23 +136,35 @@ mui inspect /Applications/Claude.app
 mui inspect /Applications/Claude.app --mode safe
 ```
 
-## Current implementation status
+## Example
 
-Implemented now:
-- read-only inspection CLI: `mui inspect <App.app>`
-- automatic runtime context collection for Homebrew and pkg hints
-- identity extraction from app bundles
-- distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
-- conventional scanning for embedded helpers and common Library state
-- evidence scoring and ownership classification
-- mode filtering: `safe`, `balanced`, `aggressive`
-- JSON output validated against `schemas/finding.schema.json`
+```bash
+mui inspect /Applications/Claude.app --mode safe
+```
 
-Still future work:
-- deeper system integration scanning (LaunchAgents/Daemons, PrivilegedHelperTools, audio plugins)
-- full entitlements/container metadata correlation
-- richer vendor adapters beyond Adobe
-- reviewed deletion engine
+The output is JSON and includes:
+- app identity
+- detected distribution kind
+- mode thresholds
+- candidate paths
+- ownership class
+- score
+- evidence
+- warnings
+- included modes
+
+## Repository contents
+
+- `docs/architecture.md` — full system architecture
+- `docs/pipeline.md` — step-by-step discovery order
+- `docs/distribution-strategies.md` — Homebrew / pkg / MAS / Setapp / Adobe handling
+- `docs/confidence-model.md` — scoring and candidate classification
+- `docs/roadmap.md` — implementation roadmap and milestones
+- `docs/generic-vendor-formulas.md` — reusable vendor-handling principles
+- `schemas/finding.schema.json` — canonical JSON shape for an inspection result
+- `examples/` — sample inspection outputs
+- `scripts/validate_examples.py` — schema validation helper
+- `tests/` — tests for schema/example validation and inspector behavior
 
 ## Initial scope
 
