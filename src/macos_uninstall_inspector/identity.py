@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import plistlib
 import re
+import subprocess
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class AppIdentity:
     vendor: str | None
     is_setapp: bool
     embedded_bundle_ids: list[str]
+    app_groups: list[str]
     search_tokens: SearchTokens
 
 
@@ -58,6 +60,7 @@ class IdentityExtractor:
                 normalized_names.append(compact)
 
         bundle_ids = [bundle_id] if bundle_id else []
+        app_groups = self._extract_app_groups(app, data)
 
         return AppIdentity(
             path=app,
@@ -67,9 +70,89 @@ class IdentityExtractor:
             vendor=vendor,
             is_setapp=bundle_id.endswith("-setapp"),
             embedded_bundle_ids=embedded_bundle_ids,
+            app_groups=app_groups,
             search_tokens=SearchTokens(
                 exact_names=exact_names,
                 normalized_names=normalized_names,
                 bundle_ids=bundle_ids,
             ),
         )
+
+    def _extract_app_groups(self, app: Path, info: dict) -> list[str]:
+        groups: list[str] = []
+
+        def add(values: object) -> None:
+            if isinstance(values, list):
+                for value in values:
+                    if (
+                        isinstance(value, str)
+                        and value
+                        and self._is_valid_app_group(value)
+                        and value not in groups
+                    ):
+                        groups.append(value)
+
+        add(info.get("com.apple.security.application-groups"))
+
+        for candidate in [
+            app / "Contents" / "Entitlements.plist",
+            app / "Contents" / "Resources" / "Entitlements.plist",
+        ]:
+            if not candidate.exists():
+                continue
+            try:
+                payload = plistlib.loads(candidate.read_bytes())
+            except Exception:
+                continue
+            add(payload.get("com.apple.security.application-groups"))
+
+        try:
+            results = [
+                subprocess.run(
+                    ["codesign", "-d", "--entitlements", "-", str(app)],
+                    capture_output=True,
+                    check=False,
+                ),
+                subprocess.run(
+                    ["codesign", "-d", "--entitlements", ":-", str(app)],
+                    capture_output=True,
+                    check=False,
+                ),
+            ]
+        except FileNotFoundError:
+            results = []
+        for result in results:
+            for blob in [result.stdout, result.stderr]:
+                if not blob:
+                    continue
+                add(self._extract_app_groups_from_codesign_blob(blob))
+
+        return sorted(groups)
+
+    def _extract_app_groups_from_codesign_blob(self, blob: bytes) -> list[str]:
+        start = blob.find(b"<?xml")
+        if start != -1:
+            try:
+                payload = plistlib.loads(blob[start:])
+            except Exception:
+                payload = None
+            if isinstance(payload, dict):
+                values = payload.get("com.apple.security.application-groups")
+                if isinstance(values, list):
+                    return [value for value in values if isinstance(value, str)]
+
+        groups: list[str] = []
+        capture = False
+        for raw_line in blob.decode("utf-8", errors="ignore").splitlines():
+            line = raw_line.strip()
+            if line == "[Key] com.apple.security.application-groups":
+                capture = True
+                continue
+            if capture and line.startswith("[Key] "):
+                break
+            if capture and line.startswith("[String] "):
+                groups.append(line.removeprefix("[String] ").strip())
+        return groups
+
+    def _is_valid_app_group(self, value: str) -> bool:
+        return re.fullmatch(r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+", value) is not None

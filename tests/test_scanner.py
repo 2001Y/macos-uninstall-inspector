@@ -50,3 +50,45 @@ def test_conventional_scanner_marks_vendor_token_matches_as_heuristic(tmp_path: 
 
     adobe_dir = next(item for item in findings if item["path"].endswith("Application Support/Adobe"))
     assert adobe_dir["evidence"] == ["vendor_suite_path", "shared_support_directory"]
+
+
+def test_conventional_scanner_finds_app_group_containers_and_scripts(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    contents = app / "Contents"
+    (contents / "Entitlements.plist").write_text(
+        """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\"> 
+<plist version=\"1.0\"><dict>
+<key>com.apple.security.application-groups</key>
+<array><string>group.com.example.shared</string></array>
+</dict></plist>
+"""
+    )
+    home = tmp_path / "home"
+    group_container = home / "Library" / "Group Containers" / "group.com.example.shared"
+    app_scripts = home / "Library" / "Application Scripts" / "group.com.example.shared"
+    group_container.mkdir(parents=True)
+    app_scripts.mkdir(parents=True)
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=home).scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(group_container) in by_path
+    assert str(app_scripts) in by_path
+    assert by_path[str(group_container)]["evidence"] == ["app_group_entitlement_exact", "group_container_exact"]
+    assert by_path[str(app_scripts)]["evidence"] == ["app_group_entitlement_exact", "application_scripts_exact"]
+
+
+def test_conventional_scanner_finds_application_scripts_by_bundle_id(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    home = tmp_path / "home"
+    app_scripts = home / "Library" / "Application Scripts" / "com.example.sample"
+    app_scripts.mkdir(parents=True)
+
+    identity = IdentityExtractor().extract(app)
+    findings = ConventionalScanner(home=home).scan(identity)
+    by_path = {item["path"]: item for item in findings}
+
+    assert str(app_scripts) in by_path
+    assert by_path[str(app_scripts)]["evidence"] == ["bundle_id_exact", "application_scripts_exact"]

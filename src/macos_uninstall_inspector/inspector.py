@@ -25,6 +25,9 @@ EVIDENCE_WEIGHTS = {
     "embedded_helper_id_exact": 28,
     "login_item_embedded": 24,
     "system_extension_embedded": 26,
+    "app_group_entitlement_exact": 10,
+    "group_container_exact": 10,
+    "application_scripts_exact": 10,
 }
 
 MODE_THRESHOLDS = {"safe": 80, "balanced": 60, "aggressive": 35}
@@ -124,6 +127,8 @@ class Inspector:
         warnings = []
         if ownership == "vendor_shared":
             warnings.append("likely_shared_across_suite")
+        if "app_group_entitlement_exact" in evidence and "bundle_id_exact" not in evidence:
+            warnings.append("may_be_shared_via_app_group")
         modes = [name for name, threshold in MODE_THRESHOLDS.items() if score >= threshold]
         return Candidate(
             path=item["path"],
@@ -138,7 +143,16 @@ class Inspector:
     def _ownership(evidence: list[str], distribution_kind: str) -> str:
         if "shared_support_directory" in evidence or distribution_kind == "vendor_suite" and "vendor_suite_path" in evidence:
             return "vendor_shared"
-        if any(ev in evidence for ev in ["homebrew_cask_artifact", "bundle_path_exact", "bundle_id_exact"]):
+        if any(
+            ev in evidence
+            for ev in [
+                "homebrew_cask_artifact",
+                "bundle_path_exact",
+                "bundle_id_exact",
+                "group_container_exact",
+                "application_scripts_exact",
+            ]
+        ) and "app_group_entitlement_exact" not in evidence:
             return "app_owned"
         if any(
             ev in evidence

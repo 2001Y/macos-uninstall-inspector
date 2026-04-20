@@ -37,6 +37,8 @@ Implemented now:
 - generic scanning for LaunchAgents / LaunchDaemons / PrivilegedHelperTools
 - embedded LoginItems / SystemExtensions classified as system-integrated candidates
 - stronger launchd correlation via bundle id / app name / executable path matching
+- entitlements-derived app groups with exact Group Containers / Application Scripts scanning
+- app-group-derived state is review-required unless exclusivity is proven
 - evidence scoring and ownership classification
 - mode filtering: `safe`, `balanced`, `aggressive`
 - JSON output validated against `schemas/finding.schema.json`

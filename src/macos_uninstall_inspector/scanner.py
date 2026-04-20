@@ -84,16 +84,32 @@ class ConventionalScanner:
             self.home / "Library" / "Saved Application State" / f"{identity.bundle_id}.savedState",
             self.home / "Library" / "Logs" / identity.display_name,
         ]
+        for group_id in identity.app_groups:
+            targets.extend(
+                [
+                    self.home / "Library" / "Group Containers" / group_id,
+                    self.home / "Library" / "Application Scripts" / group_id,
+                ]
+            )
+        for bundle_token in [identity.bundle_id, *identity.embedded_bundle_ids]:
+            if bundle_token:
+                targets.append(self.home / "Library" / "Application Scripts" / bundle_token)
         results = []
         for path in targets:
             if path.exists():
                 evidence = ["bundle_id_exact"]
+                if "Group Containers" in path.parts:
+                    evidence = ["app_group_entitlement_exact", "group_container_exact"]
+                elif "Application Scripts" in path.parts and path.name in identity.app_groups:
+                    evidence = ["app_group_entitlement_exact", "application_scripts_exact"]
+                elif "Application Scripts" in path.parts:
+                    evidence = ["bundle_id_exact", "application_scripts_exact"]
                 if "Preferences" in path.parts:
                     evidence.append("preferences_conventional_path")
                 elif "Logs" in path.parts:
                     evidence.append("logs_conventional_path")
                     evidence.append("app_name_exact")
-                else:
+                elif evidence == ["bundle_id_exact"]:
                     evidence.append("bundle_path_exact")
                 results.append({"path": str(path), "evidence": evidence})
         return results

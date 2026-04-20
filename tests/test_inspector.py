@@ -77,3 +77,23 @@ def test_inspector_marks_vendor_shared_assets(tmp_path: Path):
     assert report.distribution.kind == "vendor_suite"
     assert candidate.ownership == "vendor_shared"
     assert "likely_shared_across_suite" in candidate.warnings
+
+
+def test_inspector_marks_app_group_containers_as_review_required(tmp_path: Path):
+    app = make_app(tmp_path, "Sample", "com.example.sample")
+    report = Inspector().inspect(
+        app,
+        context={
+            "candidates": [
+                {
+                    "path": str(tmp_path / "home" / "Library" / "Group Containers" / "group.com.example.shared"),
+                    "evidence": ["app_group_entitlement_exact", "group_container_exact"],
+                }
+            ]
+        },
+    )
+
+    candidate = report.candidates[0]
+    assert candidate.ownership == "heuristic_only"
+    assert candidate.modes == ["balanced", "aggressive"]
+    assert "may_be_shared_via_app_group" in candidate.warnings
