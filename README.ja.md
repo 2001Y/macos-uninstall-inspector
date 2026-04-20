@@ -42,6 +42,7 @@
 - distribution 判定
   - plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - embedded helper と一般的な `~/Library` 領域の scan
+- `LaunchAgents` / `LaunchDaemons` / `PrivilegedHelperTools` の generic scan
 - evidence score / ownership class の算出
 - `safe` / `balanced` / `aggressive` mode filter
 - `schemas/finding.schema.json` に対する JSON validation

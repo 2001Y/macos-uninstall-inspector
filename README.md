@@ -32,6 +32,7 @@ Implemented now:
 - identity extraction from app bundles
 - distribution classification: plain / MAS / Homebrew / pkg / Setapp / Adobe vendor-suite
 - conventional scanning for embedded helpers and common Library state
+- generic scanning for LaunchAgents / LaunchDaemons / PrivilegedHelperTools
 - evidence scoring and ownership classification
 - mode filtering: `safe`, `balanced`, `aggressive`
 - JSON output validated against `schemas/finding.schema.json`

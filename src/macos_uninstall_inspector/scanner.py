@@ -15,6 +15,7 @@ class ConventionalScanner:
 
         findings.extend(self._scan_embedded(identity))
         findings.extend(self._scan_library_state(identity))
+        findings.extend(self._scan_system_integrations(identity))
         findings.extend(self._scan_vendor_shared(identity))
 
         unique: dict[str, dict] = {}
@@ -73,6 +74,34 @@ class ConventionalScanner:
                     evidence.append("bundle_path_exact")
                 results.append({"path": str(path), "evidence": evidence})
         return results
+
+    def _scan_system_integrations(self, identity: AppIdentity) -> list[dict]:
+        results = []
+        launchd_roots = [
+            self.home / "Library" / "LaunchAgents",
+            self._system_subpath("LaunchAgents"),
+            self._system_subpath("LaunchDaemons"),
+        ]
+        bundle_token = identity.bundle_id.lower()
+        for root in launchd_roots:
+            if not root.exists():
+                continue
+            for path in sorted(root.glob("*.plist")):
+                contents = path.read_text(errors="ignore").lower()
+                if bundle_token in path.name.lower() or bundle_token in contents:
+                    results.append({"path": str(path), "evidence": ["launchd_exact"]})
+
+        helper_root = self._system_subpath("PrivilegedHelperTools")
+        if helper_root.exists():
+            for path in sorted(helper_root.iterdir()):
+                if bundle_token in path.name.lower():
+                    results.append({"path": str(path), "evidence": ["privileged_helper_exact"]})
+        return results
+
+    def _system_subpath(self, name: str) -> Path:
+        if self.system_root.name == "Library":
+            return self.system_root / name
+        return self.system_root / "Library" / name
 
     def _scan_vendor_shared(self, identity: AppIdentity) -> list[dict]:
         results = []

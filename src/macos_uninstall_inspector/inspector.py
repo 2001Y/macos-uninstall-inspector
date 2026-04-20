@@ -18,6 +18,8 @@ EVIDENCE_WEIGHTS = {
     "vendor_suite_path": 8,
     "shared_support_directory": -25,
     "vendor_token_match": -15,
+    "launchd_exact": 25,
+    "privileged_helper_exact": 28,
 }
 
 MODE_THRESHOLDS = {"safe": 80, "balanced": 60, "aggressive": 35}
